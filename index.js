@@ -12,7 +12,6 @@ connectDB().catch(console.dir);
 
 // get all dentists
 app.get('/dentists', async (req, res) => {
-      // get collections
     const Dentist = mongoose.model('Dentist', new Schema({}), 'dentists')
     const dentists = await Dentist.find()
     res.status(200).json(dentists);
