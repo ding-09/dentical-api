@@ -2,8 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv').config();
 const PORT = process.env.PORT || 5000;
 const connectDB = require('./config/db');
-const mongoose = require('mongoose')
-const { Schema } = mongoose;
+const Dentist = require('./models/dentist');
 
 const app = express();
 
@@ -12,10 +11,12 @@ connectDB().catch(console.dir);
 
 // get all dentists
 app.get('/dentists', async (req, res) => {
-    const Dentist = mongoose.model('Dentist', new Schema({}), 'dentists')
-    const dentists = await Dentist.find()
-    res.status(200).json(dentists);
-})
+  const { zipcode } = req.query;
+  const dentists = await Dentist.find({ 'address.zipcode': zipcode });
+  dentists.length > 0
+    ? res.json(dentists)
+    : res.send('Cannot find anything');
+});
 
 app.listen(process.env.PORT, () => {
   console.log(`Listening on port ${PORT}`);
