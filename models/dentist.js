@@ -8,7 +8,10 @@ const dentistSchema = new Schema({
     street: String,
     city: String,
     state: String,
-    zipcode: String,
+    zipcode: {
+      type: String,
+      enum: ['93301']
+    }
   },
   phone: String,
 });

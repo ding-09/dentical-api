@@ -11,11 +11,17 @@ connectDB().catch(console.dir);
 
 // get all dentists
 app.get('/dentists', async (req, res) => {
+  // destructure zipcode
   const { zipcode } = req.query;
-  const dentists = await Dentist.find({ 'address.zipcode': zipcode });
-  dentists.length > 0
-    ? res.json(dentists)
-    : res.send('Cannot find anything');
+
+  // if there IS a zipcode, find dentist by zipcode 
+  // otherwise, no zipcode = no query = find all dentists
+  let dentists = zipcode
+    ? await Dentist.find({ 'address.zipcode': zipcode })
+    : await Dentist.find();
+  
+  // only res.json(data) if there is actually data in dentists arr
+  dentists.length > 0 ? res.json(dentists) : res.send('Cannot find anything');
 });
 
 app.listen(process.env.PORT, () => {
