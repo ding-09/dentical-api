@@ -5,9 +5,13 @@ const connectDB = require('./config/db');
 const Dentist = require('./models/dentist');
 const User = require('./models/user');
 const bcrypt = require('bcrypt');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(express.json());
 
 // connect to database
 connectDB().catch(console.dir);
@@ -24,21 +28,33 @@ app.get('/dentists', async (req, res) => {
     : await Dentist.find();
 
   // only res.json(data) if there is actually data in dentists arr
-  dentists.length > 0 ? res.json(dentists) : res.send('Cannot find anything');
+  dentists.length > 0
+    ? res.json(dentists)
+    : res.json({ message: "Can't find anything" });
 });
+
+// function that genereates JWT tokens
+const creatToken = (_id, name) => {
+  return jwt.sign({ _id, name }, process.env.SECRET, { expiresIn: '1h' });
+};
 
 // register a new user
 app.post('/signup', async (req, res) => {
-  // destructure data from req.body
-  const { email, name, password } = req.body;
+  try {
+    // destructure data from req.body
+    const { email, name, password } = req.body;
 
-  // hash password
-  const hash = await bcrypt.hash(password, 12);
+    // hash password
+    const hash = await bcrypt.hash(password, 12);
 
-  // save user data hashed password
-  const user = new User({ email, name, password: hash });
-  await user.save();
-  res.redirect('/');
+    // save user data hashed password
+    const user = new User({ email, name, password: hash });
+    await user.save();
+    const token = creatToken(user._id, user.name);
+    res.status(200).json({ name, token });
+  } catch (e) {
+    res.status(400).send('email already exists');
+  }
 });
 
 // login a user
@@ -52,9 +68,10 @@ app.post('/signin', async (req, res) => {
 
   const validatePassword = await bcrypt.compare(password, user.password);
   if (validatePassword) {
-    res.send('Successfully logged in');
+    const token = creatToken(user._id, user.name);
+    res.status(200).json({ name: user.name, token });
   } else {
-    res.send('No one! Wrong password')
+    res.status(400).send({ error: 'invalid credentials' });
   }
 });
 
