@@ -33,6 +33,14 @@ app.get('/dentists', async (req, res) => {
     : res.json({ message: "Can't find anything" });
 });
 
+app.get('/dentist/:id', async (req, res) => {
+  const { id } = req.params;
+
+  // find dentist based on id
+  let dentist = await Dentist.findById(id);
+  res.status(200).json({ dentist });
+});
+
 // function that genereates JWT tokens
 const creatToken = (_id, name) => {
   return jwt.sign({ _id, name }, process.env.SECRET, { expiresIn: '1h' });
