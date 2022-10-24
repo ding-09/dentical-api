@@ -4,9 +4,11 @@ const PORT = process.env.PORT || 5000;
 const connectDB = require('./config/db');
 const Dentist = require('./models/dentist');
 const User = require('./models/user');
+const Bookmark = require('./models/bookmark');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const authToken = require('./middleware/authToken');
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -43,7 +45,7 @@ app.get('/dentist/:id', async (req, res) => {
 
 // function that genereates JWT tokens
 const creatToken = (_id, name) => {
-  return jwt.sign({ _id, name }, process.env.SECRET, { expiresIn: '1h' });
+  return jwt.sign({ _id, name }, process.env.SECRET);
 };
 
 // register a new user
@@ -81,6 +83,24 @@ app.post('/signin', async (req, res) => {
   } else {
     res.status(400).send({ error: 'invalid credentials' });
   }
+});
+
+// bookmarks
+// create a bookmark, store in user
+app.post('/bookmark', authToken, async (req, res) => {
+  // id, title, address
+  const { id, title, address } = req.body;
+
+  // create bookmark
+  const bookmark = new Bookmark({ _id: id, title, address });
+  await bookmark.save();
+
+  // get current user
+  const { user } = req;
+
+  // store bookmark in current user
+  user.bookmarks.push(bookmark);
+  await user.save();
 });
 
 app.listen(process.env.PORT, () => {

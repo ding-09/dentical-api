@@ -17,6 +17,10 @@ const userSchema = new Schema({
     required: [true, 'Please enter a password with at least 6 characters'],
     minlength: [6, 'Password cannot be under 6 character'],
   },
+  bookmarks: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Bookmark'
+  }]
 });
 
 module.exports = mongoose.model('User', userSchema)
