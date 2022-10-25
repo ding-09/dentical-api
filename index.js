@@ -103,6 +103,15 @@ app.post('/bookmark', authToken, async (req, res) => {
   await user.save();
 });
 
+app.get('/bookmarks', authToken, async (req, res) => {
+  // find user
+  const { user } = req;
+
+  await user.populate('bookmarks');
+
+  res.status(200).json(user.bookmarks);
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
